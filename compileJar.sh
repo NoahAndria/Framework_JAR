@@ -6,3 +6,5 @@ javac -cp compilelib/servlet-api.jar -d classes framework/src/*
 cd classes || exit
 
 jar cvf my-framework.jar .
+
+mv my-framework.jar ../
