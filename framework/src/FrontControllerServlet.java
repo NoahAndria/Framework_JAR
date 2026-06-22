@@ -1,6 +1,7 @@
 package controllers;
 
-import utils.Utils;
+import myframework.utils.Utils;
+import myframework.utils.Mapping;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -14,6 +15,7 @@ import jakarta.servlet.http.*;
 public class FrontControllerServlet extends HttpServlet{
 
     List<String> classNamesString;
+    List<Mapping> mappings;
 
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
         handleRequest(req, res);
@@ -23,8 +25,12 @@ public class FrontControllerServlet extends HttpServlet{
     }
 
     public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
+
+          String url = req.getRequestURI().substring(req.getContextPath().length());
+          Mapping m = getMappingByUrl(url);
           System.out.println("FrontControllerServlet: forwarding to /pageAcceuil.jsp");
-          req.setAttribute("liste", classNamesString);
+          req.setAttribute("mappings", mappings);
+          req.setAttribute("mapping", m);
           RequestDispatcher dispat = req.getRequestDispatcher("/WEB-INF/views/pageAcceuil.jsp");
           dispat.forward(req, res);
     }
@@ -33,24 +39,31 @@ public void init() throws ServletException {
     try {
         classNamesString = new ArrayList<>();
         String classesPath = getServletContext().getRealPath("/WEB-INF/classes");
-
         Path root = Paths.get(classesPath);
 
         List<String> classNames = Utils.findClasses(root);
-
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-
         for (String className : classNames) {
             Class<?> clazz = Class.forName(className, false, loader);
-
             if (clazz.isAnnotationPresent(Controller.class)) {
                 System.out.println("Controller: " + clazz.getName());
                 classNamesString.add(clazz.getName());
             }
         }
 
+        mappings = Utils.getMappedUrls(classNamesString);
+
     } catch (Exception e) {
         throw new ServletException(e);
     }
+}
+
+public Mapping getMappingByUrl(String url) {
+    for (Mapping mapping : mappings) {
+        if (mapping.getUrl().equals(url)) {
+            return mapping;
+        }
+    }
+    return null;
 }
 }
