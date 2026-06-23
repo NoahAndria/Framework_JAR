@@ -1,17 +1,10 @@
 package myframework.utils;
 
 public class Mapping{
-    String url;
+    
     String packageName;
     String methodeName;
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
 
     public String getPackageName() {
         return packageName;

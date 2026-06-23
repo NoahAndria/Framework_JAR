@@ -3,6 +3,8 @@ package myframework.utils;
 import java.nio.file.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -32,9 +34,9 @@ public static List<String> findClasses(Path root) throws IOException {
     return classNames;
 }
 
-public static List<Mapping> getMappedUrls(List<String> controllers){
+public static Map<String, Mapping> getMappedUrls(List<String> controllers){
 
-    List<Mapping> mappings = new ArrayList<>();
+    Map<String, Mapping> mappings = new HashMap<>();
 
     try {
 
@@ -50,11 +52,11 @@ public static List<Mapping> getMappedUrls(List<String> controllers){
                 String url = mapping.name();
 
                 Mapping m = new Mapping();
-                m.setUrl(url);
+
                 m.setPackageName(controllers.get(i));
                 m.setMethodeName(method.getName());
 
-                mappings.add(m);
+                mappings.put(url, m);
             }
         }
     }
