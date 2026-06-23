@@ -4,6 +4,8 @@ import myframework.utils.Utils;
 import myframework.utils.Mapping;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import annotations.Controller;
 import java.nio.file.*;
@@ -15,7 +17,7 @@ import jakarta.servlet.http.*;
 public class FrontControllerServlet extends HttpServlet{
 
     List<String> classNamesString;
-    List<Mapping> mappings;
+    Map<String, Mapping> mappings;
 
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
         handleRequest(req, res);
@@ -29,8 +31,11 @@ public class FrontControllerServlet extends HttpServlet{
           String url = req.getRequestURI().substring(req.getContextPath().length());
           Mapping m = getMappingByUrl(url);
           System.out.println("FrontControllerServlet: forwarding to /pageAcceuil.jsp");
-          req.setAttribute("mappings", mappings);
+          
+          if(url.equals("/"))  req.setAttribute("mappings", mappings);
+         
           req.setAttribute("mapping", m);
+          req.setAttribute("url", url);
           RequestDispatcher dispat = req.getRequestDispatcher("/WEB-INF/views/pageAcceuil.jsp");
           dispat.forward(req, res);
     }
@@ -59,9 +64,9 @@ public void init() throws ServletException {
 }
 
 public Mapping getMappingByUrl(String url) {
-    for (Mapping mapping : mappings) {
-        if (mapping.getUrl().equals(url)) {
-            return mapping;
+    for (Map.Entry<String, Mapping> mapping : mappings.entrySet()) {
+        if (mapping.getKey().equals(url)) {
+            return mapping.getValue();
         }
     }
     return null;
