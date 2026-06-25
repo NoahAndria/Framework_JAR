@@ -34,9 +34,9 @@ public static List<String> findClasses(Path root) throws IOException {
     return classNames;
 }
 
-public static Map<String, Mapping> getMappedUrls(List<String> controllers){
+public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers){
 
-    Map<String, Mapping> mappings = new HashMap<>();
+    Map<UrlMethod, Mapping> mappings = new HashMap<>();
 
     try {
 
@@ -50,13 +50,20 @@ public static Map<String, Mapping> getMappedUrls(List<String> controllers){
                 UrlMapping mapping = method.getAnnotation(UrlMapping.class);
 
                 String url = mapping.name();
+                String methodString = mapping.method();
+
+                UrlMethod um = new UrlMethod();
+                um.setUrl(url);
+                um.setMethod(methodString);
 
                 Mapping m = new Mapping();
 
                 m.setPackageName(controllers.get(i));
                 m.setMethodeName(method.getName());
+                m.setControllerClass(controllerClass);
+                m.setMethodInstance(method);
 
-                mappings.put(url, m);
+                mappings.put(um, m);
             }
         }
     }
