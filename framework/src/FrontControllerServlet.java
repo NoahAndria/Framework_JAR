@@ -1,6 +1,7 @@
 package controllers;
 
 import myframework.utils.Utils;
+import myframework.utils.UrlMethod;
 import myframework.utils.Mapping;
 import java.util.List;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import jakarta.servlet.http.*;
 public class FrontControllerServlet extends HttpServlet{
 
     List<String> classNamesString;
-    Map<String, Mapping> mappings;
+    Map<UrlMethod, Mapping> mappings;
 
     protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
         handleRequest(req, res);
@@ -64,8 +65,8 @@ public void init() throws ServletException {
 }
 
 public Mapping getMappingByUrl(String url) {
-    for (Map.Entry<String, Mapping> mapping : mappings.entrySet()) {
-        if (mapping.getKey().equals(url)) {
+    for (Map.Entry<UrlMethod, Mapping> mapping : mappings.entrySet()) {
+        if (mapping.getKey().getMethod().equals(url)) {
             return mapping.getValue();
         }
     }
