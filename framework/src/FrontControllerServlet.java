@@ -30,13 +30,23 @@ public class FrontControllerServlet extends HttpServlet{
     public void handleRequest(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
 
           String url = req.getRequestURI().substring(req.getContextPath().length());
-          Mapping m = getMappingByUrl(url);
+          String method = req.getMethod();
+          Mapping m = getMappingByUrl(url, method);
           System.out.println("FrontControllerServlet: forwarding to /pageAcceuil.jsp");
           
           if(url.equals("/"))  req.setAttribute("mappings", mappings);
          
+          req.setAttribute("method", method);
           req.setAttribute("mapping", m);
           req.setAttribute("url", url);
+          if(m != null){
+                m.getMethodInstance().setAccessible(true);
+                try {
+                    m.getMethodInstance().invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
+                } catch (Exception e) {
+                    throw new ServletException(e);
+                }
+          }
           RequestDispatcher dispat = req.getRequestDispatcher("/WEB-INF/views/pageAcceuil.jsp");
           dispat.forward(req, res);
     }
@@ -64,9 +74,10 @@ public void init() throws ServletException {
     }
 }
 
-public Mapping getMappingByUrl(String url) {
+public Mapping getMappingByUrl(String url, String method) {
     for (Map.Entry<UrlMethod, Mapping> mapping : mappings.entrySet()) {
-        if (mapping.getKey().getMethod().equals(url)) {
+        UrlMethod urlMethod = mapping.getKey();
+        if (urlMethod.getUrl().equals(url) && urlMethod.getMethod().equalsIgnoreCase(method)) {
             return mapping.getValue();
         }
     }
