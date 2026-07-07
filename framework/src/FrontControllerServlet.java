@@ -51,26 +51,13 @@ public class FrontControllerServlet extends HttpServlet{
           dispat.forward(req, res);
     }
 
+@Override
 public void init() throws ServletException {
-    try {
-        classNamesString = new ArrayList<>();
-        String classesPath = getServletContext().getRealPath("/WEB-INF/classes");
-        Path root = Paths.get(classesPath);
+    classNamesString = (List<String>) getServletContext().getAttribute("controllersName");
+    mappings = (Map<UrlMethod, Mapping>) getServletContext().getAttribute("mappings");
 
-        List<String> classNames = Utils.findClasses(root);
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        for (String className : classNames) {
-            Class<?> clazz = Class.forName(className, false, loader);
-            if (clazz.isAnnotationPresent(Controller.class)) {
-                System.out.println("Controller: " + clazz.getName());
-                classNamesString.add(clazz.getName());
-            }
-        }
-
-        mappings = Utils.getMappedUrls(classNamesString);
-
-    } catch (Exception e) {
-        throw new ServletException(e);
+    if (mappings == null) {
+        throw new ServletException("Mappings were not initialized.");
     }
 }
 
