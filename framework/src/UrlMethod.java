@@ -1,5 +1,7 @@
 package myframework.utils;
 
+import java.util.Objects;
+
 public class UrlMethod{
     String url;
     String method;
@@ -26,5 +28,9 @@ public class UrlMethod{
         return ((u.getUrl().toUpperCase().equals(this.getUrl().toUpperCase())) && (u.getMethod().toUpperCase().equals(this.getMethod().toUpperCase())));
     }
 
+    @Override
+    public int hashCode(){
+        return Objects.hash(this.getUrl().toUpperCase(), this.getMethod().toUpperCase());
+    }
 
 }
