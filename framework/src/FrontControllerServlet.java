@@ -2,6 +2,7 @@ package controllers;
 
 import myframework.utils.Utils;
 import myframework.utils.UrlMethod;
+import myframework.utils.ModelView;
 import myframework.utils.Mapping;
 import java.util.List;
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class FrontControllerServlet extends HttpServlet{
           String url = req.getRequestURI().substring(req.getContextPath().length());
           String method = req.getMethod();
           Mapping m = getMappingByUrl(url, method);
-          System.out.println("FrontControllerServlet: forwarding to /pageAcceuil.jsp");
+        
           
           if(url.equals("/"))  req.setAttribute("mappings", mappings);
          
@@ -42,13 +43,32 @@ public class FrontControllerServlet extends HttpServlet{
           if(m != null){
                 m.getMethodInstance().setAccessible(true);
                 try {
-                    m.getMethodInstance().invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
+                    Object retour = m.getMethodInstance().invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
+                    String prefix = getServletContext().getInitParameter("prefix");
+                    String suffix = getServletContext().getInitParameter("suffix");
+
+                    if(retour instanceof ModelView){
+                        ModelView mv = (ModelView) retour;
+                        
+                        String view = prefix + mv.getView() + suffix;
+                        System.out.println("View that you are being redirected at my guy: " + view);
+
+                        if (mv.getAttributes() != null) {
+                            for (Map.Entry<String, Object> entry : mv.getAttributes().entrySet()) {
+                                req.setAttribute(entry.getKey(), entry.getValue());
+                            }
+                        }
+
+                        RequestDispatcher dispat = req.getRequestDispatcher(view);
+                        dispat.forward(req, res);
+                    } else {
+                        req.setAttribute("retour", retour);
+                    }
                 } catch (Exception e) {
                     throw new ServletException(e);
                 }
           }
-          RequestDispatcher dispat = req.getRequestDispatcher("/WEB-INF/views/pageAcceuil.jsp");
-          dispat.forward(req, res);
+
     }
 
 @Override

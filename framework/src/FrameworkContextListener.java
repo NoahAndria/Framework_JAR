@@ -1,4 +1,4 @@
-package uchi.utils;
+package myframework.utils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
