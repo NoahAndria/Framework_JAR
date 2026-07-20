@@ -1,4 +1,4 @@
-package controllers;
+package myframework.controllers;
 
 import myframework.utils.Utils;
 import myframework.utils.UrlMethod;
@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-import annotations.Controller;
+import myframework.annotations.Controller;
 import java.nio.file.*;
 
 import java.io.*;
