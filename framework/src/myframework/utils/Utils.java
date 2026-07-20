@@ -8,13 +8,12 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-import java.lang.annotation.Annotation;
 import java.util.List;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.lang.reflect.Method;
 
-import annotations.UrlMapping;
+import myframework.annotations.UrlMapping;
 
 public class Utils {
     
@@ -79,6 +78,14 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
 
     return mappings;
 }
+
+
+    public static ApplicationContext getContext(ServletContext context) {
+
+        return (ApplicationContext) context.getAttribute("applicationContext");
+
+    }
+
 
 
 }

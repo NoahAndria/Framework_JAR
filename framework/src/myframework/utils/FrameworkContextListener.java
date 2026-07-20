@@ -1,5 +1,9 @@
 package myframework.utils;
 
+
+import myframework.annotations.Service;
+import myframework.annotations.Repository;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
-import annotations.Controller;
+import myframework.annotations.Controller;
 import java.nio.file.*;
 
 import java.io.*;
@@ -33,6 +37,7 @@ public class FrameworkContextListener implements ServletContextListener {
         try {
 
             List<String> classNamesString = new ArrayList<>();
+            ApplicationContext applicationContext = new ApplicationContext();
 
             String classesPath =
                     sce.getServletContext().getRealPath("/WEB-INF/classes");
@@ -52,16 +57,21 @@ public class FrameworkContextListener implements ServletContextListener {
                 if (clazz.isAnnotationPresent(Controller.class)) {
                     classNamesString.add(clazz.getName());
                 }
+                if(clazz.isAnnotationPresent(Service.class) ||
+                   clazz.isAnnotationPresent(Repository.class)) {
+                    Object instance = clazz.getDeclaredConstructor().newInstance();
+                    applicationContext.addBean(clazz, instance);
+                }
             }
 
-            Map<UrlMethod, Mapping> mappings =
-                    Utils.getMappedUrls(classNamesString);
+            Map<UrlMethod, Mapping> mappings = Utils.getMappedUrls(classNamesString);
 
             // Store them globally
             ServletContext context = sce.getServletContext();
 
             context.setAttribute("controllersName", classNamesString);
             context.setAttribute("mappings", mappings);
+            context.setAttribute("applicationContext", applicationContext);
 
         } catch (Exception e) {
             throw new RuntimeException(e);

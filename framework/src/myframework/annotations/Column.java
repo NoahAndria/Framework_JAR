@@ -1,4 +1,4 @@
-package annotations;
+package myframework.annotations;
 import java.lang.annotation.*;
 
 @Target(ElementType.FIELD)
