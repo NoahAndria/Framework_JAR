@@ -20,3 +20,6 @@ package au choix
 - donner une liste de package dans lequels nous allons voir les class controller
 - define in web.xml said package
 - MAYBE create a util class to find that anotation in a given package
+
+- Ajouter une annotation RestApi
+    - Ne retourne pas une view (modelview) mais du json

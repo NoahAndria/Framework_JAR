@@ -1,0 +1,15 @@
+myframework/utils/Mapping.class
+myframework/annotations/UrlMapping.class
+myframework/utils/UrlMethod.class
+myframework/controllers/FrontControllerServlet.class
+myframework/annotations/GetMapping.class
+myframework/annotations/RestAPI.class
+myframework/annotations/Repository.class
+myframework/annotations/Controller.class
+myframework/annotations/Column.class
+myframework/utils/ModelView.class
+myframework/utils/Utils.class
+myframework/utils/ApplicationContext.class
+myframework/annotations/Service.class
+myframework/utils/FrameworkContextListener.class
+myframework/annotations/Table.class
