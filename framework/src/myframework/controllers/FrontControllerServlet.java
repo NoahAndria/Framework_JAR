@@ -4,13 +4,19 @@ import myframework.utils.Utils;
 import myframework.utils.UrlMethod;
 import myframework.utils.ModelView;
 import myframework.utils.Mapping;
+
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 
+import java.lang.reflect.Method;
+
 import myframework.annotations.Controller;
+import myframework.annotations.RestAPI;
 import java.nio.file.*;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
 import jakarta.servlet.*;
@@ -40,14 +46,31 @@ public class FrontControllerServlet extends HttpServlet{
           req.setAttribute("method", method);
           req.setAttribute("mapping", m);
           req.setAttribute("url", url);
+
+          Method methodInstance = m.getMethodInstance();
+
           if(m != null){
                 m.getMethodInstance().setAccessible(true);
                 try {
-                    Object retour = m.getMethodInstance().invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
+                    Object retour = methodInstance.invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
                     String prefix = getServletContext().getInitParameter("prefix");
                     String suffix = getServletContext().getInitParameter("suffix");
 
-                    if(retour instanceof ModelView){
+                    if(methodInstance.isAnnotationPresent(RestAPI.class)){
+
+                        res.setContentType("application/json");
+
+                        if(retour instanceof String){
+                            res.getWriter().write((String) retour);
+                        } else {
+
+                            ObjectMapper mapper = new ObjectMapper();
+                            String json = mapper.writeValueAsString(retour);
+                            res.getWriter().write(json);
+                        }
+
+                    }
+                    else if(retour instanceof ModelView){
                         ModelView mv = (ModelView) retour;
                         
                         String view = prefix + mv.getView() + suffix;
@@ -85,6 +108,7 @@ public Mapping getMappingByUrl(String url, String method) {
     for (Map.Entry<UrlMethod, Mapping> mapping : mappings.entrySet()) {
         UrlMethod urlMethod = mapping.getKey();
         if (urlMethod.getUrl().equals(url) && urlMethod.getMethod().equalsIgnoreCase(method)) {
+            System.out.print("Mapping found :" + url + " " + "method");
             return mapping.getValue();
         }
     }
