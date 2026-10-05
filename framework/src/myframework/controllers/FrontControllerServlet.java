@@ -1,26 +1,22 @@
 package myframework.controllers;
 
-import myframework.utils.Utils;
-import myframework.utils.UrlMethod;
-import myframework.utils.ModelView;
-import myframework.utils.Mapping;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
+import java.io.IOException;
 import java.lang.reflect.Method;
-
-import myframework.annotations.Controller;
-import myframework.annotations.RestAPI;
-import java.nio.file.*;
+import java.lang.reflect.Parameter;
+import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import myframework.annotations.RestAPI;
+import myframework.utils.Mapping;
+import myframework.utils.ModelView;
+import myframework.utils.UrlMethod;
 
 public class FrontControllerServlet extends HttpServlet{
 
@@ -47,28 +43,24 @@ public class FrontControllerServlet extends HttpServlet{
           req.setAttribute("mapping", m);
           req.setAttribute("url", url);
 
-          Method methodInstance = m.getMethodInstance();
 
           if(m != null){
-                m.getMethodInstance().setAccessible(true);
+                Method methodInstance = m.getMethodInstance();
+                methodInstance.setAccessible(true);
                 try {
-                    Object retour = methodInstance.invoke(m.getControllerClass().getDeclaredConstructor().newInstance());
+                    Object[] args = constructArguments(methodInstance, req);
+
+                    Object retour = methodInstance.invoke(m.getControllerClass().getDeclaredConstructor().newInstance(), args);
                     String prefix = getServletContext().getInitParameter("prefix");
                     String suffix = getServletContext().getInitParameter("suffix");
+
 
                     if(methodInstance.isAnnotationPresent(RestAPI.class)){
 
                         res.setContentType("application/json");
-
-                        if(retour instanceof String){
-                            res.getWriter().write((String) retour);
-                        } else {
-
-                            ObjectMapper mapper = new ObjectMapper();
-                            String json = mapper.writeValueAsString(retour);
-                            res.getWriter().write(json);
-                        }
-
+                        ObjectMapper mapper = new ObjectMapper();
+                        String json = mapper.writeValueAsString(retour);
+                        res.getWriter().write(json);     
                     }
                     else if(retour instanceof ModelView){
                         ModelView mv = (ModelView) retour;
@@ -113,5 +105,54 @@ public Mapping getMappingByUrl(String url, String method) {
         }
     }
     return null;
+}
+
+public Object[] constructArguments(Method method, HttpServletRequest req){
+    Parameter[] parameters = method.getParameters();
+    int parametersNumber = parameters.length;
+    Object[] arguments = new Object[parametersNumber];
+    for(int i = 0 ; i < parametersNumber; i++){
+        Parameter p = parameters[i];
+        Class<?> parameterType = p.getType();
+        String pName = p.getName();
+        System.out.print("Parameter name :"+pName);
+        String value = req.getParameter(pName);
+        arguments[i] = convert(parameterType, value, pName);
+
+    }
+
+    return arguments;
+
+}
+public Object convert(Class<?> clazz, String value , String nom){
+        
+        if (value == null) {
+            if (clazz.isPrimitive()) {
+                throw new IllegalArgumentException(
+                    "Le paramètre '" + nom + "' est obligatoire."
+                );
+            }
+
+            return null;
+        }
+
+        if (clazz == String.class) {
+            return value;
+        }
+        if (clazz == int.class ||clazz == Integer.class) {
+                return Integer.parseInt(value);
+            }
+
+        if (clazz == long.class || clazz == Long.class) {
+            return Long.parseLong(value);
+        }
+
+        if (clazz == double.class || clazz == Double.class) {
+            return Double.parseDouble(value);
+        }
+
+        throw new IllegalArgumentException(
+            "Type non pris en charge : " + clazz.getName()
+        );
 }
 }
