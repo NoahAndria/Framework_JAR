@@ -1,18 +1,17 @@
 package myframework.utils;
 
-import java.nio.file.*;
-import java.io.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
-import java.util.List;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 import myframework.annotations.UrlMapping;
 
 public class Utils {
@@ -86,6 +85,24 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
 
     }
 
+    public static boolean isCustomObject(Class<?> clazz, String nom){
 
+        if (clazz == String.class) {
+            return false;
+        }
+        if (clazz == int.class ||clazz == Integer.class) {
+                return false;
+            }
+
+        if (clazz == long.class || clazz == Long.class) {
+            return false;
+        }
+
+        if (clazz == double.class || clazz == Double.class) {
+            return false;
+        }
+
+     return true;
+}
 
 }
