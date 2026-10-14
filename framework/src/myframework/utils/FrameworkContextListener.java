@@ -1,32 +1,19 @@
 package myframework.utils;
 
 
-import myframework.annotations.Service;
-import myframework.annotations.Repository;
-
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
-
-import myframework.utils.Utils;
-import myframework.utils.UrlMethod;
-import myframework.utils.Mapping;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-
 import myframework.annotations.Controller;
-import java.nio.file.*;
-
-import java.io.*;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import myframework.annotations.Repository;
+import myframework.annotations.Service;
 
 @WebListener
 public class FrameworkContextListener implements ServletContextListener {

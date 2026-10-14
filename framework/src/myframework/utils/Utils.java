@@ -2,6 +2,7 @@ package myframework.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,6 +11,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Map;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 import myframework.annotations.UrlMapping;
 
 public class Utils {
@@ -117,17 +120,23 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
         Object[] arguments = new Object[parametersNumber];
         for(int i = 0 ; i < parametersNumber; i++){
             Parameter p = parameters[i];
+            System.out.println("Processing parameter: " + p.getName());
 
             Class<?> parameterType = p.getType();
             String pName = p.getName();
 
-            if (List.class.isAssignableFrom(parameterType)) {
+            if(MapFile.class.isAssignableFrom(parameterType)){
+                arguments[i] = formMapFileFromRequest( req, pName);
+                System.out.println(" Formed MapFile with filename : " + ((MapFile)arguments[i]).getFileName() + " and extension : " + ((MapFile)arguments[i]).getFileExtension());
+            }
+            
+            else if (List.class.isAssignableFrom(parameterType)) {
                 arguments[i] = formListFromRequest(p.getParameterizedType(), pName, req );
             }
 
             else if(isCustomObject(parameterType, pName)){
                 System.out.print(" Parameter name is a custom object: "+ pName );
-                arguments[i] = formObjectFromRequest(parameterType, req); 
+                arguments[i] = formObjectFromRequest(parameterType, req, pName + "."); 
             }
             else {
                 String value = req.getParameter(pName);
@@ -203,8 +212,12 @@ private static Object formObjectFromRequest(Class<?> clazz,HttpServletRequest re
             String parameterName = prefix + fieldName;
 
             Object value;
-            
-            if (List.class.isAssignableFrom(fieldType)) {
+
+            if(MapFile.class.isAssignableFrom(fieldType)){
+                value = formMapFileFromRequest( req, parameterName);
+            }
+
+            else if (List.class.isAssignableFrom(fieldType)) {
 
                 value = formListFromRequest(
                     field.getGenericType(), parameterName, req
@@ -217,6 +230,7 @@ private static Object formObjectFromRequest(Class<?> clazz,HttpServletRequest re
                 if (!hasParametersWithPrefix(req, prefixeParent)) {
                     continue;
                 }
+                
                 value = formObjectFromRequest(fieldType,req,prefixeParent);
             } else {
                 String valeurString = req.getParameter(parameterName);
@@ -276,5 +290,72 @@ private static List<Object> formListFromRequest(
     return result;
 }
 
+private static MapFile formMapFileFromRequest(HttpServletRequest req, String parameterName) {
 
+    try {
+        System.out.println("Trying to create a mapfile from parameter : " + parameterName);
+        Part part = req.getPart(parameterName);
+
+        if (part == null) {
+            return null;
+        }
+
+        String fileName = part.getSubmittedFileName();
+
+        if (fileName == null || fileName.isEmpty()) {
+            return null;
+        }
+
+        // Remove any path supplied with the filename.
+        fileName = fileName.replace('\\', '/');
+        fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
+
+        MapFile file = new MapFile();
+        System.out.println("File name is : " + fileName);
+        file.setFileName(fileName);
+
+        int dotIndex = fileName.lastIndexOf('.');
+        file.setFileExtension(dotIndex > 0
+                ? fileName.substring(dotIndex + 1)
+                : "");
+        System.out.println("File extension is : " + file.getFileExtension());
+
+        try (InputStream input = part.getInputStream()) {
+            file.setFileContent(input.readAllBytes());
+        }
+
+        if(file != null){
+            saveLocaly(file, "", req.getServletContext());
+        }
+
+        return file;
+
+    } catch (IOException | ServletException e) {
+        throw new IllegalStateException(
+            "Impossible de lire le fichier '" + parameterName + "'", e
+        );
+    }
+}
+
+private static void saveLocaly(MapFile file , String folderName, ServletContext context) throws IOException{
+                        
+    String uploadFolderPath = context.getInitParameter("uploadPath");
+    System.out.println("Upload folder path from web.xml is : " + uploadFolderPath);
+      if (uploadFolderPath == null || uploadFolderPath.isBlank()) {
+        throw new IllegalStateException(
+            "Le paramètre 'uploadPath' est absent ou vide dans web.xml."
+        );
+    }
+    Path targetFolder = Path.of(uploadFolderPath, folderName);
+
+    // cree le dossier parent
+    Files.createDirectories(targetFolder);
+    // ajouter le nom du fichier 
+    Path targetFile = targetFolder.resolve(file.getFileName());
+
+    // ecrire les bytes stockes dans MapFile
+    Files.write(targetFile,file.getFileContent(),StandardOpenOption.CREATE_NEW);
+
+    System.out.println("Fichier enregistré : " + targetFile.toAbsolutePath());
+}
 }

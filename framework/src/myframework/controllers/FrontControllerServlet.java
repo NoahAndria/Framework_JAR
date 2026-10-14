@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,7 +19,8 @@ import myframework.utils.ModelView;
 import myframework.utils.UrlMethod;
 import myframework.utils.Utils;
 
-    public class FrontControllerServlet extends HttpServlet{
+@MultipartConfig
+public class FrontControllerServlet extends HttpServlet{
 
         List<String> classNamesString;
         Map<UrlMethod, Mapping> mappings;
