@@ -9,6 +9,7 @@
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/controllers/FrontControllerServlet.java
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/ApplicationContext.java
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/FrameworkContextListener.java
+/home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/MapFile.java
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/Mapping.java
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/ModelView.java
 /home/noah/S4/Web Dynamique/Framework_JAR/framework/src/myframework/utils/UrlMethod.java
