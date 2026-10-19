@@ -125,7 +125,10 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
             Class<?> parameterType = p.getType();
             String pName = p.getName();
 
-            if(MapFile.class.isAssignableFrom(parameterType)){
+            if (parameterType == Session.class) {
+                arguments[i] = new Session(req.getSession());
+            }
+            else if(MapFile.class.isAssignableFrom(parameterType)){
                 arguments[i] = formMapFileFromRequest( req, pName);
                 System.out.println(" Formed MapFile with filename : " + ((MapFile)arguments[i]).getFileName() + " and extension : " + ((MapFile)arguments[i]).getFileExtension());
             }
