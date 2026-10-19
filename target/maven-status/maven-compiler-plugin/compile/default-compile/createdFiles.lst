@@ -3,6 +3,7 @@ myframework/annotations/UrlMapping.class
 myframework/utils/UrlMethod.class
 myframework/controllers/FrontControllerServlet.class
 myframework/annotations/GetMapping.class
+myframework/utils/Session.class
 myframework/annotations/RestAPI.class
 myframework/annotations/Repository.class
 myframework/annotations/Controller.class
