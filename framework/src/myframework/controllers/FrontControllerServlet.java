@@ -2,6 +2,7 @@ package myframework.controllers;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +14,11 @@ import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import myframework.annotations.Auth;
 import myframework.annotations.RestAPI;
 import myframework.utils.Mapping;
 import myframework.utils.ModelView;
+import myframework.utils.Session;
 import myframework.utils.UrlMethod;
 import myframework.utils.Utils;
 
@@ -24,6 +27,10 @@ public class FrontControllerServlet extends HttpServlet{
 
         List<String> classNamesString;
         Map<UrlMethod, Mapping> mappings;
+        Map<Class<?>, Object> controllerInstances = new HashMap<>();
+        String prefix;
+        String suffix;
+        String authString;
 
         protected void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException{
             handleRequest(req, res);
@@ -52,11 +59,24 @@ public class FrontControllerServlet extends HttpServlet{
                     try {
                         Object[] args = Utils.constructArguments(methodInstance, req);
 
-                        Object retour = methodInstance.invoke(m.getControllerClass().getDeclaredConstructor().newInstance(), args);
-                        String prefix = getServletContext().getInitParameter("prefix");
-                        String suffix = getServletContext().getInitParameter("suffix");
+                        Object controllerInstance = getControllerInstance(m.getControllerClass());
+                        Object retour = methodInstance.invoke(controllerInstance, args);
 
 
+                        if(methodInstance.isAnnotationPresent(Auth.class)){
+                            Session session =  (Session) req.getServletContext().getAttribute("session");
+
+                            if(session == null){
+                                throw new RuntimeException("Session object is null. Please ensure that the session is properly initialized.");
+                            }
+                            if(session.get(authString) == null){
+                                System.out.println("User is not authenticated. Redirecting to login page.");
+                                res.sendRedirect(req.getContextPath() + "/login");
+                                return;
+                            }
+                            System.out.println("User is authenticated. Proceeding with the request.");
+                        }
+                        
                         if(methodInstance.isAnnotationPresent(RestAPI.class)){
 
                             res.setContentType("application/json");
@@ -93,6 +113,10 @@ public class FrontControllerServlet extends HttpServlet{
         classNamesString = (List<String>) getServletContext().getAttribute("controllersName");
         mappings = (Map<UrlMethod, Mapping>) getServletContext().getAttribute("mappings");
 
+         prefix = getServletContext().getInitParameter("prefix");
+         suffix = getServletContext().getInitParameter("suffix");
+         authString = getServletContext().getInitParameter("auth");
+
         if (mappings == null) {
             throw new ServletException("Mappings were not initialized.");
         }
@@ -107,6 +131,14 @@ public class FrontControllerServlet extends HttpServlet{
             }
         }
         return null;
+    }
+
+    public Object getControllerInstance(Class<?> controllerClass) throws Exception {
+        if (!controllerInstances.containsKey(controllerClass)) {
+            Object instance = controllerClass.getDeclaredConstructor().newInstance();
+            controllerInstances.put(controllerClass, instance);
+        }
+        return controllerInstances.get(controllerClass);
     }
 
 

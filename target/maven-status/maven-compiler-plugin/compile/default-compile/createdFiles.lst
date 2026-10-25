@@ -1,3 +1,4 @@
+myframework/annotations/Auth.class
 myframework/utils/Mapping.class
 myframework/annotations/UrlMapping.class
 myframework/utils/UrlMethod.class

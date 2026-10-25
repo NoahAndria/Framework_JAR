@@ -20,6 +20,7 @@ import java.util.Map;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 import myframework.annotations.UrlMapping;
 
@@ -126,7 +127,22 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
             String pName = p.getName();
 
             if (parameterType == Session.class) {
-                arguments[i] = new Session(req.getSession());
+                HttpSession httpSession = req.getSession();
+                String key = Session.class.getName();
+
+                // Session session = (Session) httpSession.getAttribute(key);
+                Session session = (Session) req.getServletContext().getAttribute("session");
+                if (session == null) {
+                    session = new Session(httpSession);
+                    req.getServletContext().setAttribute("session", session);
+                    // httpSession.setAttribute(key, session);
+                    System.out.println("Session object created and stored in HttpSession.");
+                }else{
+                    System.out.println("Session object retrieved from HttpSession.");
+                }
+                
+
+                arguments[i] = session;
             }
             else if(MapFile.class.isAssignableFrom(parameterType)){
                 arguments[i] = formMapFileFromRequest( req, pName);
