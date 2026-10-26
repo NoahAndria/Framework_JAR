@@ -74,15 +74,24 @@ public class FrontControllerServlet extends HttpServlet{
                             String[] roles = auth.roles();
 
                             if(roles != null && roles.length > 0){
+                                boolean isAuthenticated = false;
                                 for(int i = 0; i < roles.length; i++){
                                     String role = roles[i];
                                     String sessionName = req.getServletContext().getInitParameter(role);
-                                    
-                                    if(session.get(sessionName) == null){
-                                        System.out.println("Role  " + role +" not authenticated. Redirecting to login page.");
-                                        res.sendRedirect(req.getContextPath() + "/login");
-                                        return;
+                                    if(sessionName == null) {
+                                        System.out.println("Unrecognized role :" + role);
+                                        continue;
                                     }
+                                    if(session.get(sessionName) != null){
+                                        System.out.println("Role  " + role +" authenticated.");
+                                        isAuthenticated = true;
+                                        break;
+                                    }
+                                }
+                                if(!isAuthenticated){
+                                    System.out.println("User is not authenticated. Redirecting to login page.");
+                                    res.sendRedirect(req.getContextPath() + "/login");
+                                    return;
                                 }
                             }
                             else if(session.get(authString) == null){
