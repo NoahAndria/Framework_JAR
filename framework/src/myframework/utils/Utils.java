@@ -128,14 +128,14 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
 
             if (parameterType == Session.class) {
                 HttpSession httpSession = req.getSession();
-                String key = Session.class.getName();
+                String key = "session";
 
-                // Session session = (Session) httpSession.getAttribute(key);
-                Session session = (Session) req.getServletContext().getAttribute("session");
+                Session session = (Session) httpSession.getAttribute(key);
+                // Session session = (Session) req.getServletContext().getAttribute("session");
                 if (session == null) {
-                    session = new Session(httpSession);
-                    req.getServletContext().setAttribute("session", session);
-                    // httpSession.setAttribute(key, session);
+                    session = new Session();
+                    // req.getServletContext().setAttribute("session", session);
+                    httpSession.setAttribute(key, session);
                     System.out.println("Session object created and stored in HttpSession.");
                 }else{
                     System.out.println("Session object retrieved from HttpSession.");

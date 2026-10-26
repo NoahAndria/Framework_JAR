@@ -64,12 +64,28 @@ public class FrontControllerServlet extends HttpServlet{
 
 
                         if(methodInstance.isAnnotationPresent(Auth.class)){
-                            Session session =  (Session) req.getServletContext().getAttribute("session");
+                            Session session =  (Session) req.getSession().getAttribute("session");
 
                             if(session == null){
                                 throw new RuntimeException("Session object is null. Please ensure that the session is properly initialized.");
                             }
-                            if(session.get(authString) == null){
+               
+                            Auth auth = methodInstance.getAnnotation(Auth.class);
+                            String[] roles = auth.roles();
+
+                            if(roles != null && roles.length > 0){
+                                for(int i = 0; i < roles.length; i++){
+                                    String role = roles[i];
+                                    String sessionName = req.getServletContext().getInitParameter(role);
+                                    
+                                    if(session.get(sessionName) == null){
+                                        System.out.println("Role  " + role +" not authenticated. Redirecting to login page.");
+                                        res.sendRedirect(req.getContextPath() + "/login");
+                                        return;
+                                    }
+                                }
+                            }
+                            else if(session.get(authString) == null){
                                 System.out.println("User is not authenticated. Redirecting to login page.");
                                 res.sendRedirect(req.getContextPath() + "/login");
                                 return;
