@@ -60,16 +60,41 @@ public class FrontControllerServlet extends HttpServlet{
                         Object[] args = Utils.constructArguments(methodInstance, req);
 
                         Object controllerInstance = getControllerInstance(m.getControllerClass());
-                        Object retour = methodInstance.invoke(controllerInstance, args);
 
 
                         if(methodInstance.isAnnotationPresent(Auth.class)){
-                            Session session =  (Session) req.getServletContext().getAttribute("session");
+                            Session session =  (Session) req.getSession().getAttribute("session");
 
                             if(session == null){
                                 throw new RuntimeException("Session object is null. Please ensure that the session is properly initialized.");
                             }
-                            if(session.get(authString) == null){
+               
+                            Auth auth = methodInstance.getAnnotation(Auth.class);
+                            String[] roles = auth.roles();
+
+                            if(roles != null && roles.length > 0){
+                                boolean isAuthenticated = false;
+                                for(int i = 0; i < roles.length; i++){
+                                    String role = roles[i];
+                                    String sessionName = req.getServletContext().getInitParameter(role);
+                                    if(sessionName == null) {
+                                        System.out.println("Unrecognized role :" + role);
+                                        continue;
+                                    }
+                                    if(session.get(sessionName) != null){
+                                        System.out.println("Role  " + role +" authenticated.");
+                                        isAuthenticated = true;
+                                        break;
+                                    }
+                                }
+                                if(!isAuthenticated){
+                                    // System.out.println("User is not authenticated. Redirecting to login page.");
+                                    // res.sendRedirect(req.getContextPath() + "/login");
+                                    // return;
+                                    throw new RuntimeException("Not authenticated");
+                                }
+                            }
+                            else if(session.get(authString) == null){
                                 System.out.println("User is not authenticated. Redirecting to login page.");
                                 res.sendRedirect(req.getContextPath() + "/login");
                                 return;
@@ -77,6 +102,8 @@ public class FrontControllerServlet extends HttpServlet{
                             System.out.println("User is authenticated. Proceeding with the request.");
                         }
                         
+                        Object retour = methodInstance.invoke(controllerInstance, args);
+
                         if(methodInstance.isAnnotationPresent(RestAPI.class)){
 
                             res.setContentType("application/json");
@@ -133,7 +160,7 @@ public class FrontControllerServlet extends HttpServlet{
         return null;
     }
 
-    public Object getControllerInstance(Class<?> controllerClass) throws Exception {
+    public synchronized Object getControllerInstance(Class<?> controllerClass) throws Exception {
         if (!controllerInstances.containsKey(controllerClass)) {
             Object instance = controllerClass.getDeclaredConstructor().newInstance();
             controllerInstances.put(controllerClass, instance);
