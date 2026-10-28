@@ -89,9 +89,10 @@ public class FrontControllerServlet extends HttpServlet{
                                     }
                                 }
                                 if(!isAuthenticated){
-                                    System.out.println("User is not authenticated. Redirecting to login page.");
-                                    res.sendRedirect(req.getContextPath() + "/login");
-                                    return;
+                                    // System.out.println("User is not authenticated. Redirecting to login page.");
+                                    // res.sendRedirect(req.getContextPath() + "/login");
+                                    // return;
+                                    throw new RuntimeException("Not authenticated");
                                 }
                             }
                             else if(session.get(authString) == null){
