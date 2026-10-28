@@ -31,6 +31,10 @@ public class Session {
         // return httpSession.getAttribute(name);
         return attributes.get(name);
     }
+
+    public void remove(String name){
+        attributes.remove(this.get(name), name);
+    }
     // public void setAll(Map<String, Object> attributes) {
     //     for (Map.Entry<String, Object> entry : attributes.entrySet()) {
     //         httpSession.setAttribute(entry.getKey(), entry.getValue());
