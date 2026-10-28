@@ -60,7 +60,6 @@ public class FrontControllerServlet extends HttpServlet{
                         Object[] args = Utils.constructArguments(methodInstance, req);
 
                         Object controllerInstance = getControllerInstance(m.getControllerClass());
-                        Object retour = methodInstance.invoke(controllerInstance, args);
 
 
                         if(methodInstance.isAnnotationPresent(Auth.class)){
@@ -103,6 +102,8 @@ public class FrontControllerServlet extends HttpServlet{
                             System.out.println("User is authenticated. Proceeding with the request.");
                         }
                         
+                        Object retour = methodInstance.invoke(controllerInstance, args);
+
                         if(methodInstance.isAnnotationPresent(RestAPI.class)){
 
                             res.setContentType("application/json");
@@ -159,7 +160,7 @@ public class FrontControllerServlet extends HttpServlet{
         return null;
     }
 
-    public Object getControllerInstance(Class<?> controllerClass) throws Exception {
+    public synchronized Object getControllerInstance(Class<?> controllerClass) throws Exception {
         if (!controllerInstances.containsKey(controllerClass)) {
             Object instance = controllerClass.getDeclaredConstructor().newInstance();
             controllerInstances.put(controllerClass, instance);
