@@ -33,7 +33,7 @@ public class Session {
     }
 
     public void remove(String name){
-        attributes.remove(this.get(name), name);
+        attributes.remove(name);
     }
     // public void setAll(Map<String, Object> attributes) {
     //     for (Map.Entry<String, Object> entry : attributes.entrySet()) {

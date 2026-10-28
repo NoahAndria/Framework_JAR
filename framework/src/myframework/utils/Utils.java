@@ -48,8 +48,6 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
 
     Map<UrlMethod, Mapping> mappings = new HashMap<>();
 
-    try {
-
     for(int i = 0 ; i < controllers.size(); i++){
         Class<?> controllerClass = Class.forName(controllers.get(i));
         Method[] methods = controllerClass.getDeclaredMethods();
@@ -69,7 +67,13 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
                 Mapping m = new Mapping();
                 if(mappings.containsKey(um))
                 {
-                    throw new ServletException("The url " +  url + " has multiple methods / controller handling it for " + methodString.toUpperCase());
+                    Mapping existingMapping = mappings.get(um);
+                    throw new ServletException(
+                            "The url " + url + " and method " + methodString.toUpperCase()
+                                    + " are already mapped to "
+                                    + existingMapping.getPackageName() + "#" + existingMapping.getMethodeName()
+                                    + "; cannot map them again to "
+                                    + controllers.get(i) + "#" + method.getName());
                 }
                 m.setPackageName(controllers.get(i));
                 m.setMethodeName(method.getName());
@@ -79,10 +83,6 @@ public static Map<UrlMethod, Mapping> getMappedUrls(List<String> controllers) th
                 mappings.put(um, m);
             }
         }
-    }
-
-    } catch (Exception e) {
-        System.err.println(e.getCause());
     }
 
     return mappings;
